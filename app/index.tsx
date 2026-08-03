@@ -1,756 +1,289 @@
-// Import useState from React.
-// useState lets the screen remember values typed or selected by the user.
-import { useState } from "react";
+// Import router so this page can move to another Expo Router screen.
+import { router } from "expo-router";
 
-// Import basic React Native components used to build the screen UI.
+// Import the React Native building blocks used on this page.
 import {
-  // Image displays the decorative pet header image.
+  // Image displays local picture files.
   Image,
 
-  // Pressable creates clickable buttons.
+  // Pressable creates tappable cards and buttons.
   Pressable,
 
-  // ScrollView allows the page to scroll when content is long.
+  // ScrollView lets the page scroll on smaller phone screens.
   ScrollView,
 
-  // StyleSheet stores all styles in one organized object.
+  // StyleSheet keeps all visual styles organized at the bottom.
   StyleSheet,
 
   // Text displays words on the screen.
   Text,
 
-  // TextInput lets users type into form fields.
-  TextInput,
-
-  // View is a basic container for layout.
+  // View is a basic layout container.
   View,
 } from "react-native";
 
-// Import a local image file from the assets folder.
-// Expo can load local image files through import.
+// Import the local image used in the large Health card.
 // @ts-expect-error This beginner project does not have PNG type declarations yet.
-import petHeader from "../assets/images/pet-header.png";
+import healthImage from "../assets/images/health-card.png";
 
-type AIResult = {
-  possibleCauses: string[];
-  urgency: "Low" | "Medium" | "High";
-  nextSteps: string[];
-  redFlags: string[];
-  disclaimer: string;
-};
+// Import the local image used in the Behavior card.
+// @ts-expect-error This beginner project does not have PNG type declarations yet.
+import behaviorImage from "../assets/images/behavior-card.png";
 
-// This is the main screen component.
-// Because this file is app/index.tsx, it becomes the home screen.
-export default function Index() {
-  // Store the selected pet type: Dog, Cat, or Other.
-  const [petType, setPetType] = useState("");
+// Import the local image used in the Emotion card.
+// @ts-expect-error This beginner project does not have PNG type declarations yet.
+import emotionImage from "../assets/images/emotion-card.png";
 
-  // Store the pet's age typed by the user.
-  const [age, setAge] = useState("");
-
-  // Store the pet's weight typed by the user.
-  const [weight, setWeight] = useState("");
-
-  // Store the pet's breed typed by the user.
-  const [breed, setBreed] = useState("");
-
-  // Store the symptom description typed by the user.
-  const [symptoms, setSymptoms] = useState("");
-
-  // Store when the symptoms started.
-  const [startTime, setStartTime] = useState("");
-
-  // Store whether there was a recent food change.
-  const [foodChange, setFoodChange] = useState("");
-
-  // Store whether there was a recent activity change.
-  const [activityChange, setActivityChange] = useState("");
-
-  // Store whether there was a recent environment change.
-  const [environmentChange, setEnvironmentChange] = useState("");
-
-  // Store all error messages as an array of strings.
-  const [errors, setErrors] = useState<string[]>([]);
-
-  // Store the final submitted data.
-  // Before submission, it is null.
-  // const [submittedData, setSubmittedData] = useState<object | null>(null);
-
-  // Store the AI analysis result.
-  const [aiResult, setAiResult] = useState<AIResult | null>(null);
-
-  // Store whether the app is waiting for AI.
-  const [loading, setLoading] = useState(false);
-
-  // Store an API error message.
-  const [apiError, setApiError] = useState("");
-
-  async function analyzePetWithAI(formData: object): Promise<AIResult> {
-    // Read the API key from the Expo environment variable.
-    const apiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
-
-    // Stop if the API key is missing.
-    if (!apiKey) {
-      throw new Error("OpenAI API key is missing.");
-    }
-
-    // Convert the pet form data into a prompt for the AI.
-    const prompt = `
-  
-    You are a cautious veterinary triage assistant.
-
-    Analyze the following pet information:
-
-    ${JSON.stringify(formData, null, 2)}
-
-    Return ONLY valid JSON using exactly this structure:
-
-    {
-      "possibleCauses": ["string"],
-      "urgency": "Low | Medium | High",
-      "nextSteps": ["string"],
-      "redFlags": ["string"],
-      "disclaimer": "string"
-    }
-
-    Rules:
-    - Do not give a definite diagnosis.
-    - Use cautious language such as "possible" or "may be related to."
-    - Do not provide medication dosages.
-    - If there may be an emergency, set urgency to "High."
-    - Keep the answer short and understandable.
-    - The disclaimer must state that this is not a veterinary diagnosis.
-    `;
-
-    // Send the request to the OpenAI Responses API.
-    const response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1",
-        input: prompt,
-      }),
-    });
-
-    // Check whether the request succeeded.
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`AI request failed: ${errorText}`);
-    }
-
-    // Convert the API response into a JavaScript object.
-    const data = await response.json();
-
-    // The Responses API returns generated text inside output.
-    const outputText = data.output?.[0]?.content?.[0]?.text;
-
-    // Stop if the AI returned no text.
-    if (!outputText) {
-      throw new Error("The AI returned an empty response.");
-    }
-
-    // Convert the returned JSON text into a JavaScript object.
-    return JSON.parse(outputText);
-  }
-
-  async function handleSubmit() {
-    // Create a new array for validation errors.
-    const newErrors: string[] = [];
-
-    // Convert age and weight into numbers.
-    const ageNumber = Number(age);
-    const weightNumber = Number(weight);
-
-    // Check required fields.
-    if (!petType) {
-      newErrors.push("Please choose a pet type.");
-    }
-
-    if (!symptoms.trim()) {
-      newErrors.push("Please describe the symptoms.");
-    }
-
-    // Validate optional numeric fields.
-    if (age && (Number.isNaN(ageNumber) || ageNumber <= 0)) {
-      newErrors.push("Age must be a positive number.");
-    }
-
-    if (weight && (Number.isNaN(weightNumber) || weightNumber <= 0)) {
-      newErrors.push("Weight must be a positive number.");
-    }
-
-    // Show validation errors.
-    setErrors(newErrors);
-
-    // Stop if validation failed.
-    if (newErrors.length > 0) {
-      setAiResult(null);
-      return;
-    }
-
-    // Organize the form data into one object.
-    const formData = {
-      petType,
-      age,
-      weight,
-      breed,
-      symptoms,
-      startTime,
-      foodChange,
-      activityChange,
-      environmentChange,
-    };
-
-    try {
-      // Clear old errors and results.
-      setApiError("");
-      setAiResult(null);
-
-      // Show loading state.
-      setLoading(true);
-
-      // Send form data to AI.
-      const result = await analyzePetWithAI(formData);
-
-      // Save AI result so the screen can display it.
-      setAiResult(result);
-    } catch (error) {
-      // Show a friendly error message.
-      setApiError(
-        error instanceof Error
-          ? error.message
-          : "Unable to analyze the pet information.",
-      );
-    } finally {
-      // Stop the loading state.
-      setLoading(false);
-    }
-  }
-
-  // Return the UI that appears on the phone screen.
+// This component is the Home route because this file is app/index.tsx.
+export default function HomeScreen() {
+  // The return statement describes what should appear on the phone screen.
   return (
-    // ScrollView makes the whole form scrollable.
+    // ScrollView makes the whole Home page scrollable.
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Header section */}
-      <View style={styles.header}>
-        {/* Decorative image at the top of the screen */}
-        <Image source={petHeader} style={styles.headerImage} />
-
-        {/* Small app label */}
+      {/* Top text area for the Home page. */}
+      <View style={styles.homeHeader}>
+        {/* Small app name text. */}
         <Text style={styles.kicker}>Pet Health Assistant</Text>
 
-        {/* Main screen title */}
-        <Text style={styles.title}>Tell us about your pet</Text>
+        {/* Main Home page question. */}
+        <Text style={styles.homeTitle}>How can we help your pet today?</Text>
 
-        {/* Short description under the title */}
-        <Text style={styles.subtitle}>
-          Share a few quick details so we can understand what is going on.
+        {/* Short supporting sentence under the title. */}
+        <Text style={styles.homeSubtitle}>
+          Choose a feature to better understand pet health and well-being.
         </Text>
       </View>
 
-      {/* Pet Information card */}
-      <View style={styles.card}>
-        {/* Section title */}
-        <Text style={styles.sectionTitle}>Pet Information</Text>
-
-        {/* Pet type label */}
-        <Text style={styles.label}>Pet Type *</Text>
-
-        {/* Button row for pet type options */}
-        <View style={styles.buttonRow}>
-          {/* Create one button for each pet type */}
-          {["Dog", "Cat", "Other"].map((type) => (
-            // Pressable makes each option clickable.
-            <Pressable
-              // key helps React track list items.
-              key={type}
-              // Apply normal button style.
-              // If this type is selected, also apply selected style.
-              style={[
-                styles.pillButton,
-                petType === type && styles.selectedButton,
-              ]}
-              // When pressed, update petType.
-              onPress={() => setPetType(type)}
-            >
-              {/* Button text */}
-              <Text
-                // Apply normal text style.
-                // If selected, also apply selected text style.
-                style={[
-                  styles.pillText,
-                  petType === type && styles.selectedText,
-                ]}
-              >
-                {type}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        {/* Age label */}
-        <Text style={styles.label}>Age</Text>
-
-        {/* Age input field */}
-        <TextInput
-          style={styles.input}
-          value={age}
-          onChangeText={setAge}
-          placeholder="Example: 4"
-          placeholderTextColor="#9CA3AF"
-          keyboardType="numeric"
-        />
-
-        {/* Weight label */}
-        <Text style={styles.label}>Weight (lbs)</Text>
-
-        {/* Weight input field */}
-        <TextInput
-          style={styles.input}
-          value={weight}
-          onChangeText={setWeight}
-          placeholder="Example: 22"
-          placeholderTextColor="#9CA3AF"
-          keyboardType="numeric"
-        />
-
-        {/* Breed label */}
-        <Text style={styles.label}>Breed (optional)</Text>
-
-        {/* Breed input field */}
-        <TextInput
-          style={styles.input}
-          value={breed}
-          onChangeText={setBreed}
-          placeholder="Example: Golden Retriever"
-          placeholderTextColor="#9CA3AF"
-        />
-      </View>
-
-      {/* Symptoms card */}
-      <View style={styles.card}>
-        {/* Section title */}
-        <Text style={styles.sectionTitle}>Symptoms</Text>
-
-        {/* Symptom description label */}
-        <Text style={styles.label}>Symptom Description *</Text>
-
-        {/* Multiline symptom input */}
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          value={symptoms}
-          onChangeText={setSymptoms}
-          placeholder="Example: Coughing and low energy"
-          placeholderTextColor="#9CA3AF"
-          multiline
-        />
-
-        {/* Start time label */}
-        <Text style={styles.label}>When did it start?</Text>
-
-        {/* Start time input */}
-        <TextInput
-          style={styles.input}
-          value={startTime}
-          onChangeText={setStartTime}
-          placeholder="Example: Yesterday morning"
-          placeholderTextColor="#9CA3AF"
-        />
-      </View>
-
-      {/* Context card */}
-      <View style={styles.card}>
-        {/* Section title */}
-        <Text style={styles.sectionTitle}>Context</Text>
-
-        {/* Food change label */}
-        <Text style={styles.label}>Recent food change</Text>
-
-        {/* Food change buttons */}
-        <View style={styles.buttonRow}>
-          {["Yes", "No", "Unsure"].map((option) => (
-            <Pressable
-              key={option}
-              style={[
-                styles.pillButton,
-                foodChange === option && styles.selectedButton,
-              ]}
-              onPress={() => setFoodChange(option)}
-            >
-              <Text
-                style={[
-                  styles.pillText,
-                  foodChange === option && styles.selectedText,
-                ]}
-              >
-                {option}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        {/* Activity change label */}
-        <Text style={styles.label}>Activity change</Text>
-
-        {/* Activity change buttons */}
-        <View style={styles.buttonRow}>
-          {["Yes", "No", "Unsure"].map((option) => (
-            <Pressable
-              key={option}
-              style={[
-                styles.pillButton,
-                activityChange === option && styles.selectedButton,
-              ]}
-              onPress={() => setActivityChange(option)}
-            >
-              <Text
-                style={[
-                  styles.pillText,
-                  activityChange === option && styles.selectedText,
-                ]}
-              >
-                {option}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        {/* Environment change label */}
-        <Text style={styles.label}>Environment change</Text>
-
-        {/* Environment change buttons */}
-        <View style={styles.buttonRow}>
-          {["Yes", "No", "Unsure"].map((option) => (
-            <Pressable
-              key={option}
-              style={[
-                styles.pillButton,
-                environmentChange === option && styles.selectedButton,
-              ]}
-              onPress={() => setEnvironmentChange(option)}
-            >
-              <Text
-                style={[
-                  styles.pillText,
-                  environmentChange === option && styles.selectedText,
-                ]}
-              >
-                {option}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
-      {/* Show error box only when there are errors */}
-      {errors.length > 0 && (
-        <View style={styles.errorBox}>
-          {/* Show each error message */}
-          {errors.map((error) => (
-            <Text key={error} style={styles.errorText}>
-              {error}
-            </Text>
-          ))}
-        </View>
-      )}
-
-      {/* Continue button */}
+      {/* Large clickable card that opens the Health page. */}
       <Pressable
-        style={[styles.submitButton, loading && styles.submitButtonDisabled]}
-        onPress={handleSubmit}
-        disabled={loading}
+        style={styles.featureCard}
+        onPress={() => router.push("/health")}
       >
-        <Text style={styles.submitText}>
-          {loading ? "Analyzing..." : "Analyze Pet Health"}
-        </Text>
+        {/* Decorative background image for the Health card. */}
+        <Image source={healthImage} style={styles.featureBackgroundImage} />
+
+        {/* Text content is placed above the background image. */}
+        <View style={styles.featureCardText}>
+          {/* Health card title. */}
+          <Text style={styles.featureTitle}>Health Assessment</Text>
+
+          {/* Health card description. */}
+          <Text style={styles.featureDescription}>
+            Check symptoms, urgency, next steps, and diet guidance.
+          </Text>
+        </View>
       </Pressable>
 
-      {/* Show submitted data only after successful validation */}
-      {/* Show API error if the request fails */}
-      {apiError !== "" && (
-        <View style={styles.errorBox}>
-          <Text style={styles.errorText}>{apiError}</Text>
-        </View>
-      )}
+      {/* Row that holds the two smaller feature cards. */}
+      <View style={styles.smallCardRow}>
+        {/* Small clickable card that opens the Behavior page. */}
+        <Pressable
+          style={[styles.smallCard, styles.behaviorCard]}
+          onPress={() => router.push("/behavior")}
+        >
+          {/* Decorative background image for the Behavior card. */}
+          <Image source={behaviorImage} style={styles.smallCardImage} />
 
-      {/* Show AI result after successful analysis */}
-      {aiResult && (
-        <View style={styles.resultBox}>
-          <Text style={styles.resultTitle}>AI Health Assessment</Text>
+          {/* Behavior card title. */}
+          <Text style={styles.smallCardTitle}>Behavior Analysis</Text>
 
-          <Text style={styles.resultLabel}>Urgency</Text>
-          <Text style={styles.resultValue}>{aiResult.urgency}</Text>
+          {/* Behavior card description. */}
+          <Text style={styles.smallCardDescription}>
+            Analyze visible pet behaviors from photos.
+          </Text>
 
-          <Text style={styles.resultLabel}>Possible Causes</Text>
-          {aiResult.possibleCauses.map((cause) => (
-            <Text key={cause} style={styles.resultItem}>
-              • {cause}
-            </Text>
-          ))}
+          {/* Label showing this feature is not built yet. */}
+          <Text style={styles.comingSoon}>Coming Soon</Text>
+        </Pressable>
 
-          <Text style={styles.resultLabel}>Next Steps</Text>
-          {aiResult.nextSteps.map((step) => (
-            <Text key={step} style={styles.resultItem}>
-              • {step}
-            </Text>
-          ))}
+        {/* Small clickable card that opens the Emotion page. */}
+        <Pressable
+          style={[styles.smallCard, styles.emotionCard]}
+          onPress={() => router.push("/emotion")}
+        >
+          {/* Decorative background image for the Emotion card. */}
+          <Image source={emotionImage} style={styles.smallCardImage} />
 
-          <Text style={styles.resultLabel}>Red Flags</Text>
-          {aiResult.redFlags.map((flag) => (
-            <Text key={flag} style={styles.redFlagText}>
-              • {flag}
-            </Text>
-          ))}
+          {/* Emotion card title. */}
+          <Text style={styles.smallCardTitle}>Emotion Assessment</Text>
 
-          <Text style={styles.disclaimer}>{aiResult.disclaimer}</Text>
-        </View>
-      )}
+          {/* Emotion card description. */}
+          <Text style={styles.smallCardDescription}>
+            Explore possible anxiety, fear, discomfort, or excitement.
+          </Text>
+
+          {/* Label showing this feature is not built yet. */}
+          <Text style={styles.comingSoon}>Coming Soon</Text>
+        </Pressable>
+      </View>
+
+      {/* Small safety note at the bottom of the Home page. */}
+      <View style={styles.safetyNote}>
+        {/* Safety note text. */}
+        <Text style={styles.safetyText}>
+          For urgent symptoms such as difficulty breathing, collapse, seizures,
+          or uncontrolled bleeding, contact a veterinarian immediately.
+        </Text>
+      </View>
     </ScrollView>
   );
 }
 
-// StyleSheet stores all visual styles for the screen.
+// StyleSheet stores all styles for this Home page.
 const styles = StyleSheet.create({
-  // Main page container
+  // Main page background and spacing.
   container: {
     backgroundColor: "#EEF3FF",
     padding: 20,
     paddingBottom: 40,
   },
 
-  // Top header card
-  header: {
-    backgroundColor: "#F8FAFF",
-    borderRadius: 28,
+  // Header spacing.
+  homeHeader: {
     marginBottom: 18,
-    padding: 24,
-    shadowColor: "#8D9BFF",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 3,
   },
 
-  // Decorative pet image
-  headerImage: {
-    borderRadius: 20,
-    height: 120,
-    marginBottom: 16,
-    resizeMode: "cover",
-    width: "100%",
-  },
-
-  // Small title text
+  // Small purple app label.
   kicker: {
-    color: "#6B7CFF",
+    color: "#7D8CFF",
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "800",
     marginBottom: 8,
+    marginTop: 70,
   },
 
-  // Main title text
-  title: {
+  // Large Home page title.
+  homeTitle: {
     color: "#111827",
     fontSize: 30,
     fontWeight: "800",
     lineHeight: 36,
   },
 
-  // Subtitle text
-  subtitle: {
-    color: "#6B7280",
-    fontSize: 16,
-    lineHeight: 23,
-    marginTop: 10,
-  },
-
-  // White rounded content cards
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 26,
-    marginBottom: 18,
-    padding: 20,
-    shadowColor: "#8D9BFF",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 14,
-    elevation: 2,
-  },
-
-  // Section title inside each card
-  sectionTitle: {
-    color: "#111827",
-    fontSize: 20,
-    fontWeight: "800",
-    marginBottom: 14,
-  },
-
-  // Input label text
-  label: {
-    color: "#111827",
+  // Subtitle under the title.
+  homeSubtitle: {
+    color: "#667085",
     fontSize: 15,
-    fontWeight: "700",
-    marginBottom: 8,
-    marginTop: 12,
+    lineHeight: 22,
+    marginTop: 8,
   },
 
-  // Text input style
-  input: {
-    backgroundColor: "#F8FAFF",
-    borderColor: "#E3E8FF",
-    borderRadius: 18,
-    borderWidth: 1,
-    color: "#111827",
-    fontSize: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 13,
-  },
-
-  // Extra style for longer text input
-  textArea: {
-    minHeight: 110,
-    textAlignVertical: "top",
-  },
-
-  // Row layout for option buttons
-  buttonRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-
-  // Normal pill button style
-  pillButton: {
-    backgroundColor: "#F8FAFF",
-    borderColor: "#E3E8FF",
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 18,
-    paddingVertical: 11,
-  },
-
-  // Selected pill button style
-  selectedButton: {
-    backgroundColor: "#7D8CFF",
-    borderColor: "#7D8CFF",
-  },
-
-  // Normal pill text style
-  pillText: {
-    color: "#6B7280",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-
-  // Selected pill text style
-  selectedText: {
-    color: "#FFFFFF",
-  },
-
-  // Error message container
-  errorBox: {
-    backgroundColor: "#FFF1F4",
-    borderColor: "#FFD4DD",
-    borderRadius: 20,
-    borderWidth: 1,
-    marginBottom: 16,
-    padding: 14,
-  },
-
-  // Error message text
-  errorText: {
-    color: "#B4234A",
-    fontSize: 15,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-
-  // Continue button style
-  submitButton: {
-    alignItems: "center",
-    backgroundColor: "#7D8CFF",
-    borderRadius: 999,
-    marginBottom: 20,
-    padding: 17,
-    shadowColor: "#6B7CFF",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.22,
-    shadowRadius: 12,
-    elevation: 3,
-  },
-
-  // Continue button text
-  submitText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "800",
-  },
-
-  // Box that displays submitted data
-  resultBox: {
-    backgroundColor: "#FFFFFF",
+  // Large Health card.
+  featureCard: {
+    backgroundColor: "#d0d7ff",
     borderRadius: 24,
-    padding: 18,
+    marginBottom: 14,
+    minHeight: 190,
+    overflow: "hidden",
+    padding: 20,
   },
 
-  // Submitted data title
-  resultTitle: {
+  // Text area inside the large card.
+  featureCardText: {
+    maxWidth: "62%",
+    zIndex: 2,
+  },
+
+  // Large card title.
+  featureTitle: {
     color: "#111827",
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: "800",
-    marginBottom: 10,
+    marginBottom: 8,
   },
 
-  // JSON result text
-  resultText: {
-    color: "#374151",
-    fontFamily: "monospace",
+  // Large card description.
+  featureDescription: {
+    color: "#667085",
     fontSize: 14,
-  },
-  submitButtonDisabled: {
-    opacity: 0.6,
+    lineHeight: 20,
   },
 
-  resultLabel: {
+  // Large background image inside the Health card.
+  featureBackgroundImage: {
+    bottom: -100,
+    height: 280,
+    opacity: 0.9,
+    position: "absolute",
+    resizeMode: "contain",
+    right: -50,
+    width: 280,
+  },
+
+  // Horizontal row for the two small cards.
+  smallCardRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 18,
+  },
+
+  // Shared layout for Behavior and Emotion cards.
+  smallCard: {
+    borderRadius: 22,
+    flex: 1,
+    minHeight: 210,
+    overflow: "hidden",
+    padding: 16,
+  },
+
+  // Behavior card background color.
+  behaviorCard: {
+    backgroundColor: "#e7cbfc",
+  },
+
+  // Emotion card background color.
+  emotionCard: {
+    backgroundColor: "#b0f3f1",
+  },
+
+  // Small card title.
+  smallCardTitle: {
     color: "#111827",
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "800",
     marginBottom: 6,
-    marginTop: 16,
+    zIndex: 2,
   },
 
-  resultValue: {
-    color: "#6B7CFF",
-    fontSize: 18,
+  // Small card description.
+  smallCardDescription: {
+    color: "#667085",
+    fontSize: 12,
+    lineHeight: 17,
+    zIndex: 2,
+  },
+
+  // Coming Soon label.
+  comingSoon: {
+    color: "#7D8CFF",
+    fontSize: 11,
     fontWeight: "800",
+    marginTop: 8,
+    textTransform: "uppercase",
+    zIndex: 2,
   },
 
-  resultItem: {
-    color: "#374151",
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 4,
+  // Background image inside each small card.
+  smallCardImage: {
+    bottom: -12,
+    height: 140,
+    opacity: 0.82,
+    position: "absolute",
+    resizeMode: "contain",
+    right: -12,
+    width: 128,
   },
 
-  redFlagText: {
-    color: "#B4234A",
-    fontSize: 15,
-    fontWeight: "600",
-    lineHeight: 22,
-    marginBottom: 4,
+  // Bottom safety note spacing.
+  safetyNote: {
+    marginBottom: 12,
+    paddingHorizontal: 4,
   },
 
-  disclaimer: {
-    backgroundColor: "#F8FAFF",
-    borderRadius: 16,
-    color: "#6B7280",
+  // Safety note text.
+  safetyText: {
+    color: "#667085",
     fontSize: 13,
     lineHeight: 19,
-    marginTop: 18,
-    padding: 14,
   },
 });
-
