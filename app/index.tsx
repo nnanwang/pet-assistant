@@ -1,289 +1,335 @@
-// Import router so this page can move to another Expo Router screen.
+import { useState } from "react";
 import { router } from "expo-router";
-
-// Import the React Native building blocks used on this page.
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { usePet } from "../lib/store";
+import { defaultApiUrl, getApiUrl } from "../lib/api";
+import { AssessmentResult } from "../components/results";
 import {
-  // Image displays local picture files.
-  Image,
+  Body,
+  Button,
+  Card,
+  Field,
+  Header,
+  Notice,
+  Page,
+  SafetyNote,
+  s,
+} from "../components/ui";
 
-  // Pressable creates tappable cards and buttons.
-  Pressable,
-
-  // ScrollView lets the page scroll on smaller phone screens.
-  ScrollView,
-
-  // StyleSheet keeps all visual styles organized at the bottom.
-  StyleSheet,
-
-  // Text displays words on the screen.
-  Text,
-
-  // View is a basic layout container.
-  View,
-} from "react-native";
-
-// Import the local image used in the large Health card.
-// @ts-expect-error This beginner project does not have PNG type declarations yet.
-import healthImage from "../assets/images/health-card.png";
-
-// Import the local image used in the Behavior card.
-// @ts-expect-error This beginner project does not have PNG type declarations yet.
-import behaviorImage from "../assets/images/behavior-card.png";
-
-// Import the local image used in the Emotion card.
-// @ts-expect-error This beginner project does not have PNG type declarations yet.
-import emotionImage from "../assets/images/emotion-card.png";
-
-// This component is the Home route because this file is app/index.tsx.
 export default function HomeScreen() {
-  // The return statement describes what should appear on the phone screen.
+  const { profile, history, apiUrl, setApiUrl, clear, token, setToken } =
+    usePet();
+  const [selected, setSelected] = useState<string | null>(null);
+  const [settings, setSettings] = useState(false);
+  const [status, setStatus] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const record = history.find((r) => r.id === selected);
+  async function check() {
+    setChecking(true);
+    setStatus("");
+    const abort = new AbortController();
+    const timer = setTimeout(() => abort.abort(), 8000);
+    try {
+      const response = await fetch(`${getApiUrl(apiUrl)}/api/status`, {
+        signal: abort.signal,
+      });
+      if (!response.ok)
+        throw new Error("The server did not respond successfully.");
+      const data = await response.json();
+      setStatus(
+        data.configured
+          ? "Connected · AI service is configured."
+          : "Connected · the server needs an OPENAI_API_KEY.",
+      );
+    } catch (e) {
+      setStatus(
+        e instanceof Error && e.name !== "AbortError"
+          ? `Connection failed: ${e.message}`
+          : "Connection timed out. Check that the API server is running.",
+      );
+    } finally {
+      clearTimeout(timer);
+      setChecking(false);
+    }
+  }
+  async function clearData() {
+    try {
+      await clear();
+      setSelected(null);
+      setConfirmClear(false);
+      setStatus("Local pet data cleared.");
+    } catch {
+      setStatus("Could not clear local data. Please try again.");
+    }
+  }
   return (
-    // ScrollView makes the whole Home page scrollable.
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Top text area for the Home page. */}
-      <View style={styles.homeHeader}>
-        {/* Small app name text. */}
-        <Text style={styles.kicker}>Pet Health Assistant</Text>
-
-        {/* Main Home page question. */}
-        <Text style={styles.homeTitle}>How can we help your pet today?</Text>
-
-        {/* Short supporting sentence under the title. */}
-        <Text style={styles.homeSubtitle}>
-          Choose a feature to better understand pet health and well-being.
-        </Text>
-      </View>
-
-      {/* Large clickable card that opens the Health page. */}
+    <Page>
+      <Header
+        title="How can we help your pet today?"
+        subtitle="Choose a feature to better understand pet health and well-being."
+      />
       <Pressable
-        style={styles.featureCard}
+        accessibilityRole="button"
+        accessibilityLabel="Health Assessment"
         onPress={() => router.push("/health")}
+        style={({ pressed }) => [
+          home.healthCard,
+          { opacity: pressed ? 0.8 : 1 },
+        ]}
       >
-        {/* Decorative background image for the Health card. */}
-        <Image source={healthImage} style={styles.featureBackgroundImage} />
-
-        {/* Text content is placed above the background image. */}
-        <View style={styles.featureCardText}>
-          {/* Health card title. */}
-          <Text style={styles.featureTitle}>Health Assessment</Text>
-
-          {/* Health card description. */}
-          <Text style={styles.featureDescription}>
+        <Image
+          source={require("../assets/images/health-card.png")}
+          style={home.healthImage}
+        />
+        <View style={{ maxWidth: "68%" }}>
+          <Text style={home.healthTitle}>Health Assessment</Text>
+          <Text style={home.description}>
             Check symptoms, urgency, next steps, and diet guidance.
           </Text>
         </View>
       </Pressable>
-
-      {/* Row that holds the two smaller feature cards. */}
-      <View style={styles.smallCardRow}>
-        {/* Small clickable card that opens the Behavior page. */}
+      <View style={home.row}>
         <Pressable
-          style={[styles.smallCard, styles.behaviorCard]}
+          accessibilityRole="button"
+          accessibilityLabel="Behavior Analysis"
           onPress={() => router.push("/behavior")}
+          style={({ pressed }) => [
+            home.smallCard,
+            { backgroundColor: "#E7CBFC", opacity: pressed ? 0.8 : 1 },
+          ]}
         >
-          {/* Decorative background image for the Behavior card. */}
-          <Image source={behaviorImage} style={styles.smallCardImage} />
-
-          {/* Behavior card title. */}
-          <Text style={styles.smallCardTitle}>Behavior Analysis</Text>
-
-          {/* Behavior card description. */}
-          <Text style={styles.smallCardDescription}>
+          <Image
+            source={require("../assets/images/behavior-card.png")}
+            style={home.smallImage}
+          />
+          <Text style={home.smallTitle}>Behavior Analysis</Text>
+          <Text style={home.smallDescription}>
             Analyze visible pet behaviors from photos.
           </Text>
-
-          {/* Label showing this feature is not built yet. */}
-          <Text style={styles.comingSoon}>Coming Soon</Text>
         </Pressable>
-
-        {/* Small clickable card that opens the Emotion page. */}
         <Pressable
-          style={[styles.smallCard, styles.emotionCard]}
+          accessibilityRole="button"
+          accessibilityLabel="Emotion Assessment"
           onPress={() => router.push("/emotion")}
+          style={({ pressed }) => [
+            home.smallCard,
+            { backgroundColor: "#B0F3F1", opacity: pressed ? 0.8 : 1 },
+          ]}
         >
-          {/* Decorative background image for the Emotion card. */}
-          <Image source={emotionImage} style={styles.smallCardImage} />
-
-          {/* Emotion card title. */}
-          <Text style={styles.smallCardTitle}>Emotion Assessment</Text>
-
-          {/* Emotion card description. */}
-          <Text style={styles.smallCardDescription}>
+          <Image
+            source={require("../assets/images/emotion-card.png")}
+            style={home.smallImage}
+          />
+          <Text style={home.smallTitle}>Emotion Assessment</Text>
+          <Text style={home.smallDescription}>
             Explore possible anxiety, fear, discomfort, or excitement.
           </Text>
-
-          {/* Label showing this feature is not built yet. */}
-          <Text style={styles.comingSoon}>Coming Soon</Text>
         </Pressable>
       </View>
-
-      {/* Small safety note at the bottom of the Home page. */}
-      <View style={styles.safetyNote}>
-        {/* Safety note text. */}
-        <Text style={styles.safetyText}>
-          For urgent symptoms such as difficulty breathing, collapse, seizures,
-          or uncontrolled bleeding, contact a veterinarian immediately.
-        </Text>
-      </View>
-    </ScrollView>
+      <SafetyNote />
+      <Card>
+        <View style={{ flexDirection: "row", gap: 14, alignItems: "center" }}>
+          <View
+            style={{
+              backgroundColor: "#EFF0FF",
+              padding: 15,
+              borderRadius: 20,
+            }}
+          >
+            <Ionicons name="paw" size={26} color="#5966CD" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.heading}>
+              {profile.name || "Your pet’s care space"}
+            </Text>
+            <Body>
+              {profile.petType
+                ? `${profile.petType === "Other" ? profile.species || "Other species" : profile.petType} · ${profile.age || "—"} ${profile.ageUnit} · ${profile.weight || "—"} ${profile.weightUnit}`
+                : "Start by adding a pet profile in Health."}
+            </Body>
+          </View>
+        </View>
+        <Button
+          title={profile.petType ? "Edit pet profile" : "Create pet profile"}
+          secondary
+          onPress={() => router.push("/health")}
+        />
+      </Card>
+      <Card title="Recent assessments">
+        <Body>
+          Up to 10 results saved on this device. Past assessments describe
+          earlier observations, not your pet’s current condition.
+        </Body>
+        {history.length === 0 && (
+          <Notice>Your completed assessments will appear here.</Notice>
+        )}
+        {history.map((entry) => (
+          <Pressable
+            key={entry.id}
+            accessibilityRole="button"
+            onPress={() => setSelected(selected === entry.id ? null : entry.id)}
+            style={{
+              borderTopWidth: 1,
+              borderColor: "#E5E9F4",
+              paddingVertical: 15,
+              marginTop: 8,
+              gap: 5,
+            }}
+          >
+            <Text style={s.label}>
+              {entry.petName} ·{" "}
+              {entry.kind === "summary"
+                ? "Health & emotion summary"
+                : entry.kind === "health"
+                  ? "Health assessment"
+                  : entry.kind === "emotion"
+                    ? "Emotion assessment"
+                    : "Behavior analysis"}
+            </Text>
+            <Body>
+              {new Date(entry.date).toLocaleString()} · {entry.result.urgency}{" "}
+              urgency
+            </Body>
+            <Text style={{ color: "#5966CD" }}>
+              {selected === entry.id ? "Close result ↑" : "View saved result →"}
+            </Text>
+          </Pressable>
+        ))}
+      </Card>
+      {record && (
+        <>
+          <Notice>
+            Saved assessment from {new Date(record.date).toLocaleString()}. This
+            is historical, not a new analysis. Photo files are not saved with
+            this record.
+          </Notice>
+          <AssessmentResult
+            result={record.result}
+            title={`${record.petName} · saved ${record.kind} assessment`}
+          />
+        </>
+      )}
+      <Button
+        title={
+          settings
+            ? "Close connection & privacy settings"
+            : "Connection & privacy settings"
+        }
+        secondary
+        onPress={() => setSettings(!settings)}
+      />
+      {settings && (
+        <Card title="Connection & privacy">
+          <Body>
+            Your profile, symptom notes and recent results are stored locally.
+            Photos and the server access token are not saved. Analysis sends
+            your submitted information to OpenAI through the API server.
+          </Body>
+          <Field
+            label="API server URL (optional override)"
+            value={apiUrl}
+            onChangeText={setApiUrl}
+            placeholder={defaultApiUrl()}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+          />
+          <Field
+            label="Server access token (if required)"
+            value={token}
+            onChangeText={setToken}
+            placeholder="For a protected server; kept only this session"
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <Button
+            title={checking ? "Checking connection…" : "Test connection"}
+            disabled={checking}
+            loading={checking}
+            onPress={check}
+          />
+          {!!status && <Notice>{status}</Notice>}
+          <Button
+            title="Clear local pet data"
+            secondary
+            onPress={() => setConfirmClear(true)}
+          />
+          {confirmClear && (
+            <Notice>
+              <Text>
+                This removes your saved profile, notes, photos and assessment
+                history from this device.
+              </Text>
+            </Notice>
+          )}
+          {confirmClear && (
+            <>
+              <Button title="Yes, clear my local data" onPress={clearData} />
+              <Button
+                title="Keep my data"
+                secondary
+                onPress={() => setConfirmClear(false)}
+              />
+            </>
+          )}
+        </Card>
+      )}
+    </Page>
   );
 }
 
-// StyleSheet stores all styles for this Home page.
-const styles = StyleSheet.create({
-  // Main page background and spacing.
-  container: {
-    backgroundColor: "#EEF3FF",
-    padding: 20,
-    paddingBottom: 40,
-  },
-
-  // Header spacing.
-  homeHeader: {
-    marginBottom: 18,
-  },
-
-  // Small purple app label.
-  kicker: {
-    color: "#7D8CFF",
-    fontSize: 16,
-    fontWeight: "800",
-    marginBottom: 8,
-    marginTop: 70,
-  },
-
-  // Large Home page title.
-  homeTitle: {
-    color: "#111827",
-    fontSize: 30,
-    fontWeight: "800",
-    lineHeight: 36,
-  },
-
-  // Subtitle under the title.
-  homeSubtitle: {
-    color: "#667085",
-    fontSize: 15,
-    lineHeight: 22,
-    marginTop: 8,
-  },
-
-  // Large Health card.
-  featureCard: {
-    backgroundColor: "#d0d7ff",
+const home = StyleSheet.create({
+  healthCard: {
+    backgroundColor: "#D0D7FF",
     borderRadius: 24,
-    marginBottom: 14,
     minHeight: 190,
-    overflow: "hidden",
     padding: 20,
+    marginBottom: 14,
+    overflow: "hidden",
   },
-
-  // Text area inside the large card.
-  featureCardText: {
-    maxWidth: "62%",
-    zIndex: 2,
+  healthImage: {
+    position: "absolute",
+    bottom: -100,
+    right: -50,
+    height: 280,
+    width: 280,
+    opacity: 0.9,
+    resizeMode: "contain",
   },
-
-  // Large card title.
-  featureTitle: {
-    color: "#111827",
+  healthTitle: {
     fontSize: 22,
     fontWeight: "800",
+    color: "#111827",
     marginBottom: 8,
   },
-
-  // Large card description.
-  featureDescription: {
-    color: "#667085",
-    fontSize: 14,
-    lineHeight: 20,
-  },
-
-  // Large background image inside the Health card.
-  featureBackgroundImage: {
-    bottom: -100,
-    height: 280,
-    opacity: 0.9,
-    position: "absolute",
-    resizeMode: "contain",
-    right: -50,
-    width: 280,
-  },
-
-  // Horizontal row for the two small cards.
-  smallCardRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 18,
-  },
-
-  // Shared layout for Behavior and Emotion cards.
+  description: { fontSize: 14, lineHeight: 20, color: "#536079" },
+  row: { flexDirection: "row", gap: 12, marginBottom: 18 },
   smallCard: {
-    borderRadius: 22,
     flex: 1,
+    minWidth: 0,
     minHeight: 210,
-    overflow: "hidden",
     padding: 16,
+    paddingBottom: 118,
+    borderRadius: 22,
+    overflow: "hidden",
   },
-
-  // Behavior card background color.
-  behaviorCard: {
-    backgroundColor: "#e7cbfc",
-  },
-
-  // Emotion card background color.
-  emotionCard: {
-    backgroundColor: "#b0f3f1",
-  },
-
-  // Small card title.
-  smallCardTitle: {
-    color: "#111827",
+  smallTitle: {
     fontSize: 17,
     fontWeight: "800",
+    color: "#111827",
     marginBottom: 6,
-    zIndex: 2,
   },
-
-  // Small card description.
-  smallCardDescription: {
-    color: "#667085",
-    fontSize: 12,
-    lineHeight: 17,
-    zIndex: 2,
-  },
-
-  // Coming Soon label.
-  comingSoon: {
-    color: "#7D8CFF",
-    fontSize: 11,
-    fontWeight: "800",
-    marginTop: 8,
-    textTransform: "uppercase",
-    zIndex: 2,
-  },
-
-  // Background image inside each small card.
-  smallCardImage: {
-    bottom: -12,
-    height: 140,
-    opacity: 0.82,
+  smallDescription: { fontSize: 12, lineHeight: 17, color: "#536079" },
+  smallImage: {
     position: "absolute",
-    resizeMode: "contain",
+    bottom: -12,
     right: -12,
+    height: 140,
     width: 128,
-  },
-
-  // Bottom safety note spacing.
-  safetyNote: {
-    marginBottom: 12,
-    paddingHorizontal: 4,
-  },
-
-  // Safety note text.
-  safetyText: {
-    color: "#667085",
-    fontSize: 13,
-    lineHeight: 19,
+    opacity: 0.82,
+    resizeMode: "contain",
   },
 });
