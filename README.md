@@ -1,4 +1,4 @@
-# Pet Health Assistant
+# 🐾 Pet Health Assistant
 
 **A cross-platform AI assistant that helps pet owners organize symptoms, understand visible behavior, and explore possible emotional needs.**
 
@@ -6,9 +6,81 @@ Built with **React Native, Expo, TypeScript, Node.js, and the OpenAI Responses A
 
 > **Project status:** Functional portfolio prototype with automated contract and API tests. Intended for educational guidance, not veterinary diagnosis. Live AI quality and physical-device acceptance testing remain separate validation work.
 
-[Features](#features) · [Architecture](#architecture) · [Getting started](#getting-started) · [Testing](#testing) · [Project structure](#project-structure)
+<a id="contents"></a>
 
-## Overview
+## 🧭 Contents
+
+- [📸 App preview](#app-preview)
+- [💡 Overview](#overview)
+- [✨ Features](#features)
+  - [🩺 Health assessment](#health-assessment)
+  - [🐾 Behavior analysis](#behavior-analysis)
+  - [💛 Emotion assessment](#emotion-assessment)
+  - [🏠 Shared care space](#shared-care-space)
+- [🔀 User flows](#user-flows)
+- [🏗️ Architecture](#architecture)
+  - [Technical stack](#technical-stack)
+  - [Engineering decisions](#engineering-decisions)
+- [🚀 Getting started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Install and configure](#install-and-configure)
+  - [Configuration](#configuration)
+  - [📱 Run on a phone with Expo Go](#run-on-a-phone)
+  - [Optional native development builds](#native-development-builds)
+- [🧪 Testing](#testing)
+  - [Automated coverage](#automated-coverage)
+  - [Demo mode without an API key](#demo-mode-without-an-api-key)
+  - [Verification status](#verification-status)
+- [🔌 API overview](#api-overview)
+  - [GET /api/status](#api-status)
+  - [POST /api/analyze](#api-analyze)
+- [🔒 Data and privacy](#data-and-privacy)
+- [☁️ Deployment considerations](#deployment-considerations)
+- [🔭 Limitations and future work](#limitations-and-future-work)
+- [📁 Project structure](#project-structure)
+- [📚 Supporting documents](#supporting-documents)
+- [💼 Portfolio highlights](#portfolio-highlights)
+
+<a id="app-preview"></a>
+
+## 📸 App preview
+
+Real screenshots of the running app’s web interface at a portrait browser size. These show the entry screens, not native-device captures or AI-generated mockups. Click an image to view it at full size.
+
+<table>
+  <tr>
+    <th>🏠 Home</th>
+    <th>🩺 Health</th>
+  </tr>
+  <tr>
+    <td><a href="docs/screenshots/home.png"><img src="docs/screenshots/home.png" width="300" alt="Home screen with Health, Behavior, and Emotion feature cards" /></a></td>
+    <td><a href="docs/screenshots/health.png"><img src="docs/screenshots/health.png" width="300" alt="Health assessment screen with the required pet profile form" /></a></td>
+  </tr>
+  <tr>
+    <td>Three ways to start, with a shared care space.</td>
+    <td>Structured pet details and symptom intake.</td>
+  </tr>
+  <tr>
+    <th>🐾 Behavior</th>
+    <th>💛 Emotion</th>
+  </tr>
+  <tr>
+    <td><a href="docs/screenshots/behavior.png"><img src="docs/screenshots/behavior.png" width="300" alt="Behavior analysis with optional pet profile and photo upload" /></a></td>
+    <td><a href="docs/screenshots/emotion.png"><img src="docs/screenshots/emotion.png" width="300" alt="Independent emotion assessment with photo or text input" /></a></td>
+  </tr>
+  <tr>
+    <td>Start with a photo; a profile is optional.</td>
+    <td>Use photos, a description, or both.</td>
+  </tr>
+</table>
+
+🎬 A narrated Expo Go walkthrough is planned. The [recording script](docs/DEMO.md) is available; a video has not been published yet.
+
+[↑ Back to contents](#contents)
+
+<a id="overview"></a>
+
+## 💡 Overview
 
 Pet owners often have observations rather than a clear question: a change in appetite, an unfamiliar posture, or a pet hiding after a change in routine. This project turns those observations into an organized assessment with possible explanations, urgency, practical next steps, and explicit limitations.
 
@@ -18,9 +90,15 @@ The application is designed around three principles:
 - **Evidence-aware results.** Photo observations reference numbered images; possible emotions are presented as interpretations rather than confirmed feelings.
 - **Clear boundaries.** Urgent-sign guidance appears immediately, API failures are visible, and demonstration data is explicitly labeled.
 
-## Features
+[↑ Back to contents](#contents)
 
-### Health assessment
+<a id="features"></a>
+
+## ✨ Features
+
+<a id="health-assessment"></a>
+
+### 🩺 Health assessment
 
 A structured intake collects pet species, age, weight, symptoms, onset, and recent changes. Owners can add a name, breed, existing conditions, and allergies or food restrictions.
 
@@ -33,7 +111,9 @@ The assessment provides:
 
 Health retains its required profile and symptom fields. Age and weight include explicit units, and other species require a species description.
 
-### Behavior analysis
+<a id="behavior-analysis"></a>
+
+### 🐾 Behavior analysis
 
 Upload **1–8 photos** of the same pet and episode to explore posture and visible behavior. Background information about triggers, surroundings, and recent events is optional.
 
@@ -45,7 +125,9 @@ Upload **1–8 photos** of the same pet and episode to explore posture and visib
 
 Still photos are treated as limited observations; the application does not claim to measure movement, breathing rate, or repeated behavior from them.
 
-### Emotion assessment
+<a id="emotion-assessment"></a>
+
+### 💛 Emotion assessment
 
 Start directly with **photos, a written description, or both**. With no photos, the description must contain at least eight characters.
 
@@ -57,7 +139,9 @@ Start directly with **photos, a written description, or both**. With no photos, 
 
 When a current Health or Behavior result exists, an **optional combined summary** can integrate those assessments. This is a separate action and does not block independent emotion analysis. Its urgency cannot fall below either supplied assessment.
 
-### Shared care space
+<a id="shared-care-space"></a>
+
+### 🏠 Shared care space
 
 - One active pet profile shared across all three features.
 - Up to **10 timestamped assessments** stored locally.
@@ -66,7 +150,11 @@ When a current Health or Behavior result exists, an **optional combined summary*
 - Local-data clearing from the privacy settings.
 - A consistent four-tab interface with reusable forms, notices, and result cards.
 
-## User flows
+[↑ Back to contents](#contents)
+
+<a id="user-flows"></a>
+
+## 🔀 User flows
 
 | Entry point      | Required input                                           | Optional input                                          | Requires an earlier assessment? |
 | ---------------- | -------------------------------------------------------- | ------------------------------------------------------- | ------------------------------- |
@@ -77,7 +165,11 @@ When a current Health or Behavior result exists, an **optional combined summary*
 
 Saved profile information enriches an analysis without becoming a mandatory onboarding step for Behavior or Emotion. Partial profiles are supported: unknown age or weight is omitted rather than converted into a fabricated value.
 
-## Architecture
+[↑ Back to contents](#contents)
+
+<a id="architecture"></a>
+
+## 🏗️ Architecture
 
 ```mermaid
 flowchart TD
@@ -90,6 +182,8 @@ flowchart TD
     Output --> Safety[Photo evidence checks and urgency rules]
     Safety --> Results[Typed result cards and local history]
 ```
+
+<a id="technical-stack"></a>
 
 ### Technical stack
 
@@ -106,6 +200,8 @@ flowchart TD
 | Testing        | Node.js test runner, mocked provider responses, HTTP integration tests       |
 | Code quality   | TypeScript, ESLint, Prettier                                                 |
 
+<a id="engineering-decisions"></a>
+
 ### Engineering decisions
 
 **Shared contracts across the network boundary.** Client inputs are checked before submission, and the API validates requests again. AI output must pass both structured-output parsing and application-level checks before being shown.
@@ -118,7 +214,13 @@ flowchart TD
 
 **Server-side provider credentials.** The client calls the project API, which calls OpenAI. Provider keys are never required in the mobile or web bundle.
 
-## Getting started
+[↑ Back to contents](#contents)
+
+<a id="getting-started"></a>
+
+## 🚀 Getting started
+
+<a id="prerequisites"></a>
 
 ### Prerequisites
 
@@ -128,6 +230,8 @@ flowchart TD
 - For native Android development: the Android SDK and a configured emulator or device.
 
 The project also declares a development Node binary dependency so npm scripts can use the supported runtime after installation.
+
+<a id="install-and-configure"></a>
 
 ### Install and configure
 
@@ -143,16 +247,23 @@ Create a local environment file if one does not already exist:
 cp .env.example .env
 ```
 
-Set the server-side key in `.env`:
+Set the required server-side key in `.env`. If the file already exists, edit it in place rather than copying over it:
 
 ```dotenv
 OPENAI_API_KEY=your_api_key_here
+```
+
+The following settings are optional: the server uses these defaults when they are omitted.
+
+```dotenv
 OPENAI_MODEL=gpt-4.1
 API_PORT=8787
 API_HOST=127.0.0.1
 ```
 
-Keep the remaining settings from `.env.example`, then start the app and API together:
+For phone testing on the same trusted Wi-Fi network, use `API_HOST=0.0.0.0` instead. Keep that value if your existing `.env` is already configured for phone access; changing it to `127.0.0.1` would restrict the API to the computer itself. `API_PORT` can remain omitted when using port `8787`.
+
+Start the app and API together:
 
 ```sh
 npm run dev
@@ -162,6 +273,8 @@ npm run dev
 - API status: **http://localhost:8787/api/status**
 
 The development command starts both processes. Changes to `.env` restart the API automatically; stop both with `Ctrl+C`. Client-side environment changes may require restarting Expo and reloading the app.
+
+<a id="configuration"></a>
 
 ### Configuration
 
@@ -179,15 +292,42 @@ The development command starts both processes. Changes to `.env` restart the API
 
 An API URL entered in **Home → Connection & privacy** takes precedence over the configured/default address. If changing the API port, update the client address as well.
 
-### Run on a phone
+<a id="run-on-a-phone"></a>
 
-1. Connect the phone and development computer to the same trusted network.
-2. Set `API_HOST=0.0.0.0` in `.env` so the API accepts LAN connections.
-3. Open the app through a compatible Expo Go installation or a native development build.
-4. If needed, set the API URL in Connection settings to `http://YOUR_COMPUTER_LAN_IP:8787`.
-5. Allow local-network access when prompted and use **Test connection** to verify reachability.
+### 📱 Run on a phone
 
-A phone’s `localhost` refers to the phone, not the development computer. Opening Expo through a tunnel does not automatically expose the separate API server.
+**📱 Classroom demo workflow: open the app in Expo Go by scanning the terminal QR code.** You do not need to compile a native app for this workflow.
+
+1. **Prepare Expo Go.** Use an Expo Go version compatible with this project’s **Expo SDK 54**. See the [official version selector](https://expo.dev/go?sdkVersion=54) if you encounter an SDK mismatch; the newest store release is not automatically compatible with every older project.
+2. **Connect to the same Wi-Fi.** Keep the phone and computer on the same trusted network.
+3. **Allow the phone to reach the API.** In the computer’s `.env`, keep your server API key and set:
+
+   ```dotenv
+   API_HOST=0.0.0.0
+   API_PORT=8787
+   ```
+
+   The port line is optional because `8787` is the default. `0.0.0.0` is the server’s listening setting, not an address to enter on the phone.
+
+4. **Start both services on the computer.**
+
+   ```sh
+   npm run dev
+   ```
+
+   Keep this terminal running. Expo serves the app on port `8082`; the separate analysis API runs on port `8787`. If Expo targets a development build, press `s` in the Expo terminal to switch to Expo Go.
+
+5. **Scan the QR code.** On iPhone, scan with Camera and follow the link to Expo Go. On Android, use the QR scanner in Expo Go. Allow local-network access when prompted. If Expo Go requests account sign-in, follow the message and use the same Expo account in the app and Expo CLI.
+6. **Check the API connection.** In **Home → Connection & privacy**, use the connection test. The app normally derives the API address from the Expo development host. If needed, enter `http://YOUR_COMPUTER_LAN_IP:8787`, replacing the placeholder with the computer’s Wi-Fi IP address.
+7. **Try a feature.** Complete the Health intake, upload a photo in Behavior, or describe a situation in Emotion. Live analysis requires a valid server-side API key; simply opening the app does not verify provider access.
+
+**Troubleshooting:** If the app opens but analysis says “Cannot reach the server,” check the API process, `API_HOST`, phone permissions, Wi-Fi network, and API URL. The phone’s `localhost` refers to the phone, not your computer. An Expo tunnel carries the app connection; it does not automatically expose the separate API.
+
+Reference: [Expo’s official device-start guide](https://docs.expo.dev/get-started/start-developing/).
+
+<a id="native-development-builds"></a>
+
+### Optional native development builds
 
 For native builds, keep the API running in another terminal:
 
@@ -200,7 +340,11 @@ npm run android
 
 The iOS native project is checked in; Expo generates the Android native project when needed for a local Android build. Native dependency or permission changes require rebuilding a custom development client. Release builds require an **HTTPS** API address.
 
-## Testing
+[↑ Back to contents](#contents)
+
+<a id="testing"></a>
+
+## 🧪 Testing
 
 ```sh
 npm run typecheck
@@ -211,6 +355,8 @@ npm run build:all
 ```
 
 `build:all` exports web assets and iOS/Android JavaScript/Hermes bundles; it does not create signed store binaries.
+
+<a id="automated-coverage"></a>
 
 ### Automated coverage
 
@@ -228,6 +374,8 @@ The current suite contains **21 passing tests**, including:
 
 Provider calls in automated tests are mocked. Passing tests verify application behavior, not medical accuracy or live model quality.
 
+<a id="demo-mode-without-an-api-key"></a>
+
 ### Demo mode without an API key
 
 ```sh
@@ -237,6 +385,8 @@ npm run test:ui-server
 This starts an isolated fixture API at **http://localhost:8788**. Enter that URL in the web app’s Connection settings to exercise result cards, sharing, and history. Every fixture result is labeled **TEST FIXTURE**. Restore the API override to blank afterward.
 
 The real API never silently falls back to this service. This fixture server binds to loopback and is intended for local browser testing.
+
+<a id="verification-status"></a>
 
 ### Verification status
 
@@ -252,7 +402,13 @@ The real API never silently falls back to this service. This fixture server bind
 
 See [the verification report](docs/TEST_REPORT.md) for details and remaining acceptance items.
 
-## API overview
+[↑ Back to contents](#contents)
+
+<a id="api-overview"></a>
+
+## 🔌 API overview
+
+<a id="api-status"></a>
 
 ### `GET /api/status`
 
@@ -263,6 +419,8 @@ Returns:
 ```
 
 `configured` indicates that a provider key is present. It does **not** validate the key, model access, billing, or quota.
+
+<a id="api-analyze"></a>
 
 ### `POST /api/analyze`
 
@@ -282,7 +440,11 @@ The response is `{ "result": ... }`; errors use `{ "error": "..." }`. The comple
 
 The API enforces a 13 MB request-body limit, at most four concurrent analyses, and an in-memory limit of ten analysis requests per IP per minute. These controls apply per server process.
 
-## Data and privacy
+[↑ Back to contents](#contents)
+
+<a id="data-and-privacy"></a>
+
+## 🔒 Data and privacy
 
 | Data                                                                  | Handling                                                                |
 | --------------------------------------------------------------------- | ----------------------------------------------------------------------- |
@@ -295,7 +457,11 @@ Local storage is not encrypted. Image-processing tools or the operating system m
 
 OpenAI requests set `store: false`; this is not a claim of zero provider retention. The server does not log request bodies or photos. Keep provider credentials in server environment variables, never in `EXPO_PUBLIC_*` variables or committed files. `.env` files are ignored; `.env.example` contains configuration placeholders.
 
-## Deployment considerations
+[↑ Back to contents](#contents)
+
+<a id="deployment-considerations"></a>
+
+## ☁️ Deployment considerations
 
 The frontend and API are separate deployment units:
 
@@ -306,7 +472,11 @@ The frontend and API are separate deployment units:
 
 The current shared-token access model is intended for a private instance. A public multi-user release would need per-user authentication, deployment-aware rate limiting, operational monitoring, and a reviewed privacy policy. No public deployment or app-store release is included in the repository.
 
-## Limitations and future work
+[↑ Back to contents](#contents)
+
+<a id="limitations-and-future-work"></a>
+
+## 🔭 Limitations and future work
 
 - **Educational assistance:** results are not diagnoses and do not replace veterinary care.
 - **Still-image input:** no video processing, motion tracking, or continuous monitoring.
@@ -317,7 +487,11 @@ The current shared-token access model is intended for a private instance. A publ
 
 Potential extensions include multi-pet profiles, account-based synchronization, localization, stronger provider evaluation datasets, and video-based observation after appropriate validation.
 
-## Project structure
+[↑ Back to contents](#contents)
+
+<a id="project-structure"></a>
+
+## 📁 Project structure
 
 ```text
 app/                      Expo Router screens and tab layout
@@ -338,15 +512,25 @@ ios/                      Native iOS project
 docs/                     Product brief, syllabus mapping, demo script, test report
 ```
 
-## Supporting documents
+[↑ Back to contents](#contents)
+
+<a id="supporting-documents"></a>
+
+## 📚 Supporting documents
 
 - [Product brief](docs/PRODUCT_BRIEF.md)
 - [Syllabus coverage and acceptance checklist](docs/SYLLABUS.md)
 - [Demo recording script](docs/DEMO.md) — a script, not a completed recording.
 - [Verification report](docs/TEST_REPORT.md)
 
-## Portfolio highlights
+[↑ Back to contents](#contents)
+
+<a id="portfolio-highlights"></a>
+
+## 💼 Portfolio highlights
 
 This project demonstrates full-stack TypeScript development, cross-platform interface design, multimodal AI integration, shared runtime validation, asynchronous state management, and deterministic API testing.
 
 The implementation includes independent text/image workflows, optional shared context, structured AI results, stale-response protection, server-side credential handling, and explicit boundaries between tested software behavior and unverified model quality.
+
+[↑ Back to contents](#contents)
