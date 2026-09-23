@@ -8,38 +8,24 @@ Built with **React Native, Expo, TypeScript, Node.js, and the OpenAI Responses A
 
 <a id="contents"></a>
 
-## 🧭 Contents
+## Contents
 
-- [📸 App preview](#app-preview)
-- [💡 Overview](#overview)
-- [✨ Features](#features)
-  - [🩺 Health assessment](#health-assessment)
-  - [🐾 Behavior analysis](#behavior-analysis)
-  - [💛 Emotion assessment](#emotion-assessment)
-  - [🏠 Shared care space](#shared-care-space)
-- [🔀 User flows](#user-flows)
-- [🏗️ Architecture](#architecture)
-  - [Technical stack](#technical-stack)
-  - [Engineering decisions](#engineering-decisions)
-- [🚀 Getting started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Install and configure](#install-and-configure)
-  - [Configuration](#configuration)
-  - [📱 Run on a phone with Expo Go](#run-on-a-phone)
-  - [Optional native development builds](#native-development-builds)
-- [🧪 Testing](#testing)
-  - [Automated coverage](#automated-coverage)
-  - [Demo mode without an API key](#demo-mode-without-an-api-key)
-  - [Verification status](#verification-status)
-- [🔌 API overview](#api-overview)
-  - [GET /api/status](#api-status)
-  - [POST /api/analyze](#api-analyze)
-- [🔒 Data and privacy](#data-and-privacy)
-- [☁️ Deployment considerations](#deployment-considerations)
-- [🔭 Limitations and future work](#limitations-and-future-work)
-- [📁 Project structure](#project-structure)
-- [📚 Supporting documents](#supporting-documents)
-- [💼 Portfolio highlights](#portfolio-highlights)
+<ul>
+  <li><a href="#app-preview">App preview</a></li>
+  <li><a href="#overview">Overview</a></li>
+  <li><a href="#features">Features</a></li>
+  <li><a href="#user-flows">User flows</a></li>
+  <li><a href="#architecture">Architecture</a></li>
+  <li><a href="#getting-started">Getting started</a></li>
+  <li><a href="#testing">Testing</a></li>
+  <li><a href="#api-overview">API overview</a></li>
+  <li><a href="#data-and-privacy">Data and privacy</a></li>
+  <li><a href="#deployment-considerations">Deployment considerations</a></li>
+  <li><a href="#limitations-and-future-work">Limitations and future work</a></li>
+  <li><a href="#project-structure">Project structure</a></li>
+  <li><a href="#supporting-documents">Supporting documents</a></li>
+  <li><a href="#portfolio-highlights">Portfolio highlights</a></li>
+</ul>
 
 <a id="app-preview"></a>
 
