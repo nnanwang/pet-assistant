@@ -95,7 +95,7 @@ The assessment provides:
 - General food, feeding-frequency, and hydration guidance.
 - An immediate emergency notice when an urgent sign is selected, before any AI request completes.
 
-Health retains its required profile and symptom fields. Age and weight include explicit units, and other species require a species description.
+Health retains its required profile and symptom fields. Age and weight include explicit units, and other species require a species description. <br>
 <img width="300"  alt="ScreenRecording_09-24-202612-40-30_1-ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/56310d5c-e276-43a3-9694-6e6c6ac39032" />
 
 <a id="behavior-analysis"></a>
@@ -111,7 +111,7 @@ Upload **1–8 photos** of the same pet and episode to explore posture and visib
 - Structured behavior tags, photo references, evidence explanations, and subjective AI confidence estimates.
 
 Still photos are treated as limited observations; the application does not claim to measure movement, breathing rate, or repeated behavior from them.
-
+<br>
 <img width="300" alt="Behavior analysis demo" src="assets/images/behavior.gif" />
 
 <a id="emotion-assessment"></a>
@@ -126,7 +126,7 @@ Start directly with **photos, a written description, or both**. With no photos, 
 - Possible emotional states, supporting explanations, calming guidance, and environmental suggestions.
 - Text-only assessments cannot return invented photo observations.
 
-When a current Health or Behavior result exists, an **optional combined summary** can integrate those assessments. This is a separate action and does not block independent emotion analysis. Its urgency cannot fall below either supplied assessment.
+When a current Health or Behavior result exists, an **optional combined summary** can integrate those assessments. This is a separate action and does not block independent emotion analysis. Its urgency cannot fall below either supplied assessment. <br>
 <img width="300" alt="Emotion assessment demo" src="assets/images/emotion.gif" />
 
 <a id="shared-care-space"></a>
