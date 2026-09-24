@@ -112,6 +112,7 @@ Upload **1–8 photos** of the same pet and episode to explore posture and visib
 
 Still photos are treated as limited observations; the application does not claim to measure movement, breathing rate, or repeated behavior from them.
 
+<img width="300" alt="Behavior analysis demo" src="assets/images/behavior.gif" />
 
 <a id="emotion-assessment"></a>
 
@@ -126,6 +127,7 @@ Start directly with **photos, a written description, or both**. With no photos, 
 - Text-only assessments cannot return invented photo observations.
 
 When a current Health or Behavior result exists, an **optional combined summary** can integrate those assessments. This is a separate action and does not block independent emotion analysis. Its urgency cannot fall below either supplied assessment.
+<img width="300" alt="Emotion assessment demo" src="assets/images/emotion.gif" />
 
 <a id="shared-care-space"></a>
 
